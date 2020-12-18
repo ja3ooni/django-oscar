@@ -6,11 +6,10 @@ from django.test import TestCase
 from oscar.apps.offer import models
 from oscar.apps.offer.results import OfferApplications
 from oscar.apps.offer.utils import Applicator
-from oscar.test.factories import (
-    BasketFactory, RangeFactory, BenefitFactory, ConditionFactory,
-    ConditionalOfferFactory)
-
 from oscar.test.basket import add_product
+from oscar.test.factories import (
+    BasketFactory, BenefitFactory, ConditionalOfferFactory, ConditionFactory,
+    RangeFactory)
 
 
 class TestOfferApplicator(TestCase):
@@ -30,7 +29,6 @@ class TestOfferApplicator(TestCase):
         add_product(self.basket, D('100'), 5)
         offer = ConditionalOfferFactory(
             pk=1, condition=self.condition, benefit=self.benefit)
-        self.applicator.apply
         self.applicator.apply_offers(self.basket, [offer])
         line = self.basket.all_lines()[0]
         self.assertTrue(line.quantity_with_offer_discount(offer) == 5)

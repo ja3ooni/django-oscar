@@ -3,14 +3,13 @@ from http import client as http_client
 from django.conf import settings
 from django.urls import reverse
 
-from oscar.core.loading import get_model
 from oscar.apps.order.models import (
     Order, OrderNote, PaymentEvent, PaymentEventType)
-from oscar.test.factories import PartnerFactory, ShippingAddressFactory
-from oscar.test.factories import create_order, create_basket
+from oscar.core.loading import get_model
+from oscar.test.factories import (
+    PartnerFactory, ShippingAddressFactory, SourceTypeFactory,
+    create_basket, create_order)
 from oscar.test.testcases import WebTestCase
-from oscar.test.factories import SourceTypeFactory
-
 
 Basket = get_model('basket', 'Basket')
 Partner = get_model('partner', 'Partner')
@@ -210,7 +209,7 @@ class TestOrderListSearch(WebTestCase):
             self.assertEqual(response.status_code, 200)
             applied_filters = [
                 el.text.strip() for el in
-                response.html.select('.search-filter-list .label')
+                response.html.select('.search-filter-list .badge')
             ]
             self.assertEqual(applied_filters, expected_filters)
 
@@ -279,7 +278,7 @@ class TestChangingOrderStatus(WebTestCase):
     def setUp(self):
         super().setUp()
 
-        Order.pipeline = {'A': ('B', 'C')}
+        Order.pipeline = {'A': ('B', 'C'), 'B': ('C', ), 'C': ()}
         self.order = create_order(status='A')
         url = reverse('dashboard:order-detail',
                       kwargs={'number': self.order.number})

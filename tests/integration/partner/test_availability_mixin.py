@@ -3,7 +3,7 @@ from unittest import mock
 
 from django.test import TestCase
 
-from oscar.apps.partner import strategy, availability
+from oscar.apps.partner import availability, strategy
 
 
 class TestStockRequiredMixin(TestCase):
@@ -12,7 +12,7 @@ class TestStockRequiredMixin(TestCase):
         self.mixin = strategy.StockRequired()
         self.product = mock.Mock()
         self.stockrecord = mock.Mock()
-        self.stockrecord.price_excl_tax = D('12.00')
+        self.stockrecord.price = D('12.00')
 
     def test_returns_unavailable_without_stockrecord(self):
         policy = self.mixin.availability_policy(

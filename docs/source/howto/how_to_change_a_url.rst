@@ -47,8 +47,8 @@ config class illustrates this nicely::
 
         def get_urls(self):
             urls = [
-                url(r'^catalogue/', self.catalogue_app.urls),
-                url(r'^basket/', self.basket_app.urls),
+                path('catalogue/', self.catalogue_app.urls),
+                path('basket/', self.basket_app.urls),
                 # ...
             ]
 
@@ -61,14 +61,14 @@ all Oscar URLs to your Django project, you only need to include the list of URLs
 
     urlpatterns = [
         # Your other URLs
-        url(r'^', include(apps.get_app_config('oscar').urls[0])),
+        path('', include(apps.get_app_config('oscar').urls[0])),
     ]
 
 Changing sub apps
 -----------------
 
-App configs of sub apps such as the ``catalogue`` app are dynamically obtained
-by looking them up in the Django app registry::
+:py:class:`~django.apps.config.AppConfig` of sub apps such as the ``catalogue`` app are dynamically
+obtained by looking them up in the Django app registry::
 
     # oscar/config.py
     from django.apps import apps
@@ -101,7 +101,7 @@ configuration::
         def get_urls(self):
             urls = super().get_urls()
             urls += [
-                url(r'extra/$', self.extra_view.as_view(), name='extra'),
+                path('extra/', self.extra_view.as_view(), name='extra'),
             ]
             return self.post_process_urls(urls)
 
@@ -120,7 +120,7 @@ class and override the ``get_urls`` method::
         # Override get_urls method
         def get_urls(self):
             urlpatterns = [
-                url(r'^catalog/', self.catalogue_app.urls),
+                path('catalog/', self.catalogue_app.urls),
                 # all the remaining URLs, removed for simplicity
                 # ...
             ]
@@ -129,15 +129,15 @@ class and override the ``get_urls`` method::
     # myproject/__init__.py
     default_app_config = 'myproject.apps.MyShop'
 
-As the root app config is hardcoded in your project's ``urls.py``, you need to
-modify it to use your new app config instead of Oscar's default::
+Then change ``urls.py`` to use your new :py:class:`~django.apps.config.AppConfig`
+instead of Oscar's default::
 
     # urls.py
     from django.apps import apps
 
     urlpatterns = [
        # Your other URLs
-       url(r'^', include(apps.get_app_config('myproject').urls[0])),
+       path('', include(apps.get_app_config('myproject').urls[0])),
     ]
 
 All URLs containing ``/catalogue/`` previously are now displayed as ``/catalog/``.

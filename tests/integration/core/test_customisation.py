@@ -1,14 +1,14 @@
 import os
-from os.path import exists, join
 import sys
 import tempfile
+from os.path import exists, join
 
 import pytest
-
 from django.conf import settings
 from django.test import TestCase, override_settings
 
 from oscar.core import customisation
+from tests import delete_from_import_cache
 
 VALID_FOLDER_PATH = 'tests/_site/apps'
 
@@ -40,11 +40,21 @@ def test_creates_new_folder(tmpdir):
     path.join('order').ensure_dir()
 
 
-def test_creates_init_file(tmpdir):
+def test_creates_init_file(tmpdir, monkeypatch):
     path = tmpdir.mkdir('fork')
     customisation.fork_app('order', str(path), 'order')
 
     path.join('order').join('__init__.py').ensure()
+
+    monkeypatch.syspath_prepend(str(tmpdir))
+
+    config_module = __import__('fork.order.apps', fromlist=['OrderConfig'])
+    delete_from_import_cache('fork.order.apps')
+
+    expected_string = "default_app_config = '{}.apps.OrderConfig".format(
+        config_module.OrderConfig.name)
+    contents = path.join('order').join('__init__.py').read()
+    assert expected_string in contents
 
 
 def test_handles_dashboard_app(tmpdir):
@@ -106,7 +116,7 @@ class TestForkApp(TestCase):
     def test_fork_third_party(self):
         tmpdir = tempfile.mkdtemp()
         installed_apps = list(settings.INSTALLED_APPS)
-        installed_apps.append('thirdparty_package.apps.myapp')
+        installed_apps.append('thirdparty_package.apps.myapp.apps.MyAppConfig')
         with override_settings(INSTALLED_APPS=installed_apps):
             customisation.fork_app('myapp', tmpdir, 'custom_myapp')
             forked_app_dir = join(tmpdir, 'custom_myapp')
@@ -117,7 +127,6 @@ class TestForkApp(TestCase):
             config_module = __import__('custom_myapp.apps', fromlist=['CustomMyAppConfig'])
             assert hasattr(config_module, 'MyAppConfig')
             assert config_module.MyAppConfig.name.endswith('.custom_myapp')
-            assert config_module.MyAppConfig.label == 'myapp'
 
     def test_absolute_target_path(self):
         tmpdir = tempfile.mkdtemp()

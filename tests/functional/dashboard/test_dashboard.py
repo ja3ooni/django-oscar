@@ -2,12 +2,13 @@ from decimal import Decimal as D
 
 from django.urls import reverse
 
-from oscar.core import prices
-from oscar.core.loading import get_model
 from oscar.apps.dashboard.views import IndexView
 from oscar.apps.order.models import Order
+from oscar.core import prices
+from oscar.core.loading import get_model
+from oscar.test.factories import (
+    UserFactory, create_basket, create_order, create_product)
 from oscar.test.testcases import WebTestCase
-from oscar.test.factories import create_order, create_product, create_basket, UserFactory
 
 StockAlert = get_model('partner', 'StockAlert')
 
@@ -83,6 +84,14 @@ class TestDashboardIndexForStaffUser(WebTestCase):
         for key in GENERIC_STATS_KEYS + STAFF_STATS_KEYS:
             self.assertInContext(response, key)
 
+    def test_login_redirects_to_dashboard_index(self):
+        page = self.get(reverse('dashboard:login'))
+        form = page.forms['dashboard_login_form']
+        form['username'] = self.email
+        form['password'] = self.password
+        response = form.submit('login_submit')
+        self.assertRedirectsTo(response, 'dashboard:index')
+
 
 class TestDashboardIndexForPartnerUser(WebTestCase):
     permissions = ['partner.dashboard_access']
@@ -145,7 +154,7 @@ class TestDashboardIndexStatsForNonStaffUser(WebTestCase):
         context = response.context
         self.assertEqual(context['total_orders_last_day'], 1)
         self.assertEqual(context['total_lines_last_day'], 1)
-        self.assertEqual(context['total_revenue_last_day'], D(5))
+        self.assertEqual(context['total_revenue_last_day'], D(27))
         self.assertEqual(context['total_customers_last_day'], 1)
         self.assertEqual(context['total_open_baskets_last_day'], 1)
         self.assertEqual(context['total_products'], 1)
@@ -155,7 +164,7 @@ class TestDashboardIndexStatsForNonStaffUser(WebTestCase):
         self.assertEqual(context['total_open_baskets'], 1)
         self.assertEqual(context['total_orders'], 1)
         self.assertEqual(context['total_lines'], 1)
-        self.assertEqual(context['total_revenue'], D(5))
+        self.assertEqual(context['total_revenue'], D(27))
 
     def test_partner2(self):
         user = self.create_user(username='user', email='testuser@example.com')
@@ -165,7 +174,7 @@ class TestDashboardIndexStatsForNonStaffUser(WebTestCase):
         context = response.context
         self.assertEqual(context['total_orders_last_day'], 9)
         self.assertEqual(context['total_lines_last_day'], 9)
-        self.assertEqual(context['total_revenue_last_day'], D(90))
+        self.assertEqual(context['total_revenue_last_day'], D(288))
         self.assertEqual(context['total_customers_last_day'], 1)
         self.assertEqual(context['total_open_baskets_last_day'], 0)
         self.assertEqual(context['total_products'], 2)
@@ -175,4 +184,4 @@ class TestDashboardIndexStatsForNonStaffUser(WebTestCase):
         self.assertEqual(context['total_open_baskets'], 0)
         self.assertEqual(context['total_orders'], 9)
         self.assertEqual(context['total_lines'], 9)
-        self.assertEqual(context['total_revenue'], D(90))
+        self.assertEqual(context['total_revenue'], D(288))

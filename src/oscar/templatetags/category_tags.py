@@ -1,5 +1,5 @@
-from six import with_metaclass
 from django import template
+
 from oscar.core.loading import get_model
 
 register = template.Library()
@@ -33,7 +33,7 @@ class CategoryFieldPassThroughMetaClass(type):
         return type.__new__(cls, name, bases, field_accessors)
 
 
-class CheapCategoryInfo(with_metaclass(CategoryFieldPassThroughMetaClass, dict)):
+class CheapCategoryInfo(dict, metaclass=CategoryFieldPassThroughMetaClass):
     """
     Wrapper class for Category.
 
@@ -92,6 +92,8 @@ def get_annotated_list(depth=None, parent=None):
 
     if max_depth is not None:
         categories = categories.filter(depth__lte=max_depth)
+
+    categories = categories.browsable()
 
     info = CheapCategoryInfo(parent, url="")
 

@@ -5,7 +5,7 @@
 {% load reviews_tags %}
 
 {% block extra_breadcrumbs %}
-    <li>
+    <li class="breadcrumb-item">
         <a href="{% url 'customer:order-list' %}">{% trans 'Order history' %}</a>
     </li>
 {% endblock %}
@@ -21,7 +21,6 @@
         <thead>
             <tr>
                 <th>{% trans 'Product' %}</th>
-                <th>{% trans 'Dispatch date' %}</th>
                 <th>{% trans 'Qty' %}</th>
                 <th>{% trans 'Line price excl. tax' %}</th>
                 <th>{% trans 'Line price incl. tax' %}</th>
@@ -45,7 +44,7 @@
 
                                 {% iffeature "reviews" %}
                                     {% if product|is_review_permitted:user %}
-                                        <a class="btn btn-default" href="{% url 'catalogue:reviews-add' product_slug=product.slug product_pk=product.id %}#addreview">{% trans 'Write a review' %}</a>
+                                        <a class="btn btn-secondary" href="{% url 'catalogue:reviews-add' product_slug=product.slug product_pk=product.id %}#addreview">{% trans 'Write a review' %}</a>
                                     {% endif %}
                                 {% endiffeature %}
                             {% else %}
@@ -54,7 +53,6 @@
                                 </p>
                             {% endif %}
                         </td>
-                        <td>{{ line.est_dispatch_date|default:"-" }}</td>
                         <td>{{ line.quantity }}</td>
                         <td>{{ line.line_price_before_discounts_excl_tax|currency:order.currency }}</td>
                         <td>{{ line.line_price_before_discounts_incl_tax|currency:order.currency }}</td>
@@ -63,7 +61,7 @@
                                 <form id="line_form_{{ line.id }}" action="{% url 'customer:order-line' order_number=order.number line_id=line.id %}" method="POST">
                                     {% csrf_token %}
                                     <input type="hidden" name="action" value="reorder" />
-                                    <button id="reorder_line_{{ line.id }}" class="btn btn-success" type="submit" data-loading-text="{% trans 'Re-ordering...' %}">{% trans 'Re-order' %}</button>
+                                    <button id="reorder_line_{{ line.id }}" class="btn btn-success" type="submit" data-loading-text="{% trans 'Re-ordering...' context 'Buy again' %}">{% trans 'Re-order' context 'Buy again' %}</button>
                                 </form>
                             {% else %}
                                 {% trans 'Not available anymore' %}
@@ -83,7 +81,7 @@
                         {% for discount in discounts %}
                         <tr>
                             <td colspan="4">
-                                <span class="label label-success">{% trans "Discount" %}</span>
+                                <span class="badge badge-success">{% trans "Discount" %}</span>
                                 {{ discount.offer_name }}
                             </td>
                             <td colspan="2">- {{ discount.amount|currency:order.currency }}</td>
@@ -116,7 +114,7 @@
                     {% for discount in order.shipping_discounts %}
                     <tr>
                         <td colspan="4">
-                            <span class="label label-success">{% trans "Discount" %}</span>
+                            <span class="badge badge-success">{% trans "Discount" %}</span>
                             {{ discount.offer_name }}
                         </td>
                         <td colspan="2">- {{ discount.amount|currency:order.currency }}</td>
@@ -148,7 +146,7 @@
             {% csrf_token %}
             <input type="hidden" name="order_id" value="{{ order.id }}" />
             <input type="hidden" name="action" value="reorder" />
-            <button type="submit" class="btn btn-success" data-loading-text="{% trans 'Re-ordering...' %}">{% trans 'Re-order all items' %}</button>
+            <button type="submit" class="btn btn-success" data-loading-text="{% trans 'Re-ordering...' context 'Buy again' %}">{% trans 'Re-order all items' context 'Buy again' %}</button>
         </form>
     {% endblock order_actions %}
 
